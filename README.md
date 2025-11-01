@@ -82,6 +82,22 @@ Untuk menjalankan proyek ini secara lokal, ikuti langkah-langkah berikut.
     ```
     Aplikasi sekarang akan berjalan di `http://localhost:5173` (atau port lain yang tersedia).
 
+## 部署 Deployment to Vercel
+
+Proyek ini dikonfigurasi untuk deployment yang mulus ke [Vercel](https://vercel.com/).
+
+1.  **Hubungkan Repositori Anda:** Impor repositori Git Anda ke Vercel.
+2.  **Konfigurasi Proyek:** Vercel akan secara otomatis mendeteksi bahwa ini adalah proyek Vite dan mengonfigurasi pengaturan build dengan benar:
+    -   **Build Command:** `vite build` (atau `npm run build`)
+    -   **Output Directory:** `dist`
+    -   **Install Command:** `npm install`
+3.  **Tambahkan Variabel Lingkungan:** Buka pengaturan proyek di Vercel, navigasikan ke "Environment Variables", dan tambahkan kunci API Gemini Anda:
+    -   **Key:** `VITE_API_KEY`
+    -   **Value:** `YOUR_GEMINI_API_KEY`
+4.  **Deploy:** Vercel akan secara otomatis membangun dan men-deploy aplikasi Anda.
+    
+File `vercel.json` yang ada di repositori ini memastikan bahwa routing untuk *Single-Page Application* (SPA) ditangani dengan benar, sehingga me-refresh halaman atau mengunjungi tautan langsung tidak akan menyebabkan error 404.
+
 ## 🎮 Cara Bermain
 
 1.  **Pilih Layanan AI:** Saat pertama kali memulai, Anda akan diminta untuk memilih antara **Gemini, Mistral, Groq (Cloud)** atau **Ollama (Lokal)**. Untuk layanan cloud selain Gemini, Anda akan diminta untuk memasukkan kunci API Anda.
