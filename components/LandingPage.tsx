@@ -62,6 +62,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartGame }) => {
                 >
                     Begin Your Adventure
                 </button>
+                <div className="mt-8 text-center text-sm text-slate-400">
+                    <p>
+                        Dibuat oleh rfypych. Lihat di{' '}
+                        <a 
+                            href="https://github.com/rfypych/llm-text-rpg" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-amber-400 hover:text-amber-300 underline transition-colors"
+                        >
+                            GitHub
+                        </a>.
+                    </p>
+                </div>
             </footer>
         </div>
     </div>
