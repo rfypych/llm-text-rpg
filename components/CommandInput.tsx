@@ -18,7 +18,7 @@ export const CommandInput: React.FC<CommandInputProps> = ({ onSubmit, isLoading 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t-2 border-gray-700">
+    <form onSubmit={handleSubmit} className="p-4">
       <div className="flex items-center bg-gray-800 rounded-lg p-1">
         <input
           type="text"

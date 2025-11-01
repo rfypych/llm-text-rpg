@@ -2,8 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import { Enemy } from '../types';
 
 interface NarrativeLogProps {
-  log: (string | { type: 'narration', content: string })[];
+  log: (string | { type: 'narration', content: string } | { type: 'player', content: string } | { type: 'combat', content: string })[];
   enemies: Enemy[];
+  playerName: string;
+  logAnimStartIndex: number;
 }
 
 const EnemyStatus: React.FC<{ enemy: Enemy }> = ({ enemy }) => {
@@ -23,7 +25,7 @@ const EnemyStatus: React.FC<{ enemy: Enemy }> = ({ enemy }) => {
 }
 
 // Component to parse and render highlighted text
-export const HighlightedText: React.FC<{ text: string }> = ({ text }) => {
+export const HighlightedText: React.FC<{ text: string; playerName?: string }> = ({ text, playerName }) => {
     if (typeof text !== 'string' || !text) {
         return null;
     }
@@ -44,13 +46,33 @@ export const HighlightedText: React.FC<{ text: string }> = ({ text }) => {
                 if (part.startsWith('_') && part.endsWith('_')) {
                     return <span key={index} className="highlight-action">{part.slice(1, -1)}</span>;
                 }
+                
+                // If it's a plain text part, check for the player's name
+                if (playerName && playerName.trim().length > 0 && part.toLowerCase().includes(playerName.toLowerCase())) {
+                    const escapedPlayerName = playerName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    const nameRegex = new RegExp(`(\\b${escapedPlayerName}\\b)`, 'gi');
+                    
+                    if (nameRegex.test(part)) {
+                        const subParts = part.split(nameRegex);
+                        return (
+                            <React.Fragment key={index}>
+                                {subParts.map((subPart, subIndex) => 
+                                    subPart.toLowerCase() === playerName.toLowerCase()
+                                        ? <span key={subIndex} className="highlight-character">{subPart}</span>
+                                        : subPart
+                                )}
+                            </React.Fragment>
+                        );
+                    }
+                }
+
                 return part;
             })}
         </>
     );
 };
 
-export const NarrativeLog: React.FC<NarrativeLogProps> = ({ log, enemies }) => {
+export const NarrativeLog: React.FC<NarrativeLogProps> = ({ log, enemies, playerName, logAnimStartIndex }) => {
   const logEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -69,17 +91,35 @@ export const NarrativeLog: React.FC<NarrativeLogProps> = ({ log, enemies }) => {
         )}
       <div className="space-y-4 text-gray-300">
         {log.map((entry, index) => {
+          const animationClass = index >= logAnimStartIndex ? 'animate-fade-in-entry' : '';
+
           if (typeof entry === 'string') {
             return (
-              <p key={index} className="text-sm italic text-yellow-300 pl-4 border-l-2 border-yellow-500/50">
+              <p key={index} className={`text-sm italic text-yellow-300 pl-4 border-l-2 border-yellow-500/50 ${animationClass}`}>
                 {entry}
               </p>
             );
           }
+          if (entry.type === 'player') {
+            return (
+              <div key={index} className={`flex justify-end ${animationClass}`}>
+                <p className="bg-blue-800/70 text-gray-200 rounded-lg rounded-br-none py-2 px-4 max-w-lg italic shadow">
+                    &gt; {entry.content}
+                </p>
+              </div>
+            );
+          }
           if (entry.type === 'narration') {
             return (
-              <p key={index} className="text-base leading-relaxed whitespace-pre-wrap">
-                <HighlightedText text={entry.content} />
+              <p key={index} className={`text-base leading-relaxed whitespace-pre-wrap ${animationClass}`}>
+                <HighlightedText text={entry.content} playerName={playerName} />
+              </p>
+            );
+          }
+          if (entry.type === 'combat') {
+            return (
+              <p key={index} className={`text-center font-bold text-red-400 py-2 my-2 border-y-2 border-red-700/50 bg-red-900/20 ${animationClass}`}>
+                ⚔️ {entry.content} ⚔️
               </p>
             );
           }

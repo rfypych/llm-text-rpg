@@ -13,9 +13,9 @@ export const INITIAL_PLAYER_STATE: PlayerState = {
   maxExp: 100,
   gold: 50,
   inventory: [
-    { id: "rusty_sword", name: "Pedang Berkarat", type: ItemType.EQUIPMENT, equipped: true, slot: EquipmentSlot.WEAPON, stats: { atk: 2 } },
-    { id: "leather_armor", name: "Zirah Kulit", type: ItemType.EQUIPMENT, equipped: true, slot: EquipmentSlot.ARMOR, stats: { def: 2 } },
-    { id: "health_potion", name: "Potion Penyembuh", type: ItemType.CONSUMABLE, count: 3 },
+    { id: "rusty_sword", name: "Pedang Berkarat", icon: "⚔️", type: ItemType.EQUIPMENT, equipped: true, slot: EquipmentSlot.WEAPON, stats: { atk: 2 }, durability: 25, maxDurability: 30 },
+    { id: "leather_armor", name: "Zirah Kulit", icon: "👕", type: ItemType.EQUIPMENT, equipped: true, slot: EquipmentSlot.ARMOR, stats: { def: 2 }, durability: 40, maxDurability: 40 },
+    { id: "health_potion", name: "Potion Penyembuh", icon: "🧪", type: ItemType.CONSUMABLE, count: 3 },
   ],
 };
 
@@ -40,6 +40,7 @@ export const INITIAL_GAME_STATE: GameState = {
     isLoading: true,
     log: [],
     questOffer: null,
+    suggestedActions: [],
 }
 
 export const TILE_TYPES: { [key: string]: { name: string, icon: string } } = {

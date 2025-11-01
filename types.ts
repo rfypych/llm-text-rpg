@@ -1,3 +1,5 @@
+
+
 export enum ItemType {
   EQUIPMENT = "EQUIPMENT",
   CONSUMABLE = "CONSUMABLE",
@@ -10,11 +12,13 @@ export enum EquipmentSlot {
   WEAPON = "WEAPON",
   ARMOR = "ARMOR",
   HELMET = "HELMET",
+  SHIELD = "SHIELD",
 }
 
 export interface Item {
   id: string;
   name: string;
+  icon: string; // Emoji icon for the item
   type: ItemType;
   count?: number;
   equipped?: boolean;
@@ -23,6 +27,8 @@ export interface Item {
     atk?: number;
     def?: number;
   };
+  durability?: number;
+  maxDurability?: number;
 }
 
 export interface PlayerStats {
@@ -80,8 +86,9 @@ export interface GameState {
   history: { role: "GM" | "player"; content: string }[];
   quests: Quest[];
   isLoading: boolean;
-  log: (string | { type: 'narration', content: string })[];
+  log: (string | { type: 'narration', content: string } | { type: 'player', content: string } | { type: 'combat', content: string })[];
   questOffer?: Omit<Quest, 'status'> | null;
+  suggestedActions: string[];
 }
 
 // API Communication Structures
@@ -131,7 +138,17 @@ export interface GeminiResponse {
     increment?: { [key: string]: number };
   };
   inventoryUpdates?: {
-    add?: { id: string; name: string; type: ItemType; count?: number, slot?: EquipmentSlot, stats?: { atk?: number, def?: number } }[];
+    add?: { 
+        id: string; 
+        name: string;
+        icon: string;
+        type: ItemType; 
+        count?: number;
+        slot?: EquipmentSlot; 
+        stats?: { atk?: number, def?: number };
+        durability?: number;
+        maxDurability?: number;
+    }[];
     remove?: string[]; // array of item ids to remove
     update?: { id: string, changes: Partial<Omit<Item, 'id'>> }[];
   };
@@ -145,4 +162,5 @@ export interface GeminiResponse {
     update?: { id: string; changes: { description?: string, status?: QuestStatus } }[];
   };
   questOffer?: Omit<Quest, 'status'>;
+  suggestedActions?: string[];
 }

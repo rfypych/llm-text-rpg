@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
 
 interface CharacterCreationProps {
   onStart: (name: string) => void;
+  onBack: () => void;
 }
 
-export const CharacterCreation: React.FC<CharacterCreationProps> = ({ onStart }) => {
+export const CharacterCreation: React.FC<CharacterCreationProps> = ({ onStart, onBack }) => {
   const [name, setName] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -46,6 +46,14 @@ export const CharacterCreation: React.FC<CharacterCreationProps> = ({ onStart })
             Mulai Petualangan
           </button>
         </form>
+         <div className="text-center pt-2 border-t border-gray-700/50">
+            <button
+              onClick={onBack}
+              className="text-sm text-gray-400 hover:text-yellow-400 transition-colors duration-200 pt-4"
+            >
+              Ubah Layanan AI
+            </button>
+        </div>
       </div>
     </div>
   );

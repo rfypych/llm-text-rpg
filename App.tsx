@@ -1,4 +1,3 @@
-
 import React, { useReducer, useEffect, useCallback, useState, useRef } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { NarrativeLog, HighlightedText } from './components/NarrativeLog';
@@ -10,6 +9,11 @@ import { CharacterCreation } from './components/CharacterCreation';
 import { getTileTypeForCoords } from './services/mapService';
 import { Toast } from './components/Toast';
 import { ServiceSelection } from './components/ServiceSelection';
+import { PlayerStats } from './components/PlayerStats';
+import { Inventory } from './components/Inventory';
+import { MapView } from './components/MapView';
+import { QuestLog } from './components/QuestLog';
+import { SuggestedActions } from './components/SuggestedActions';
 
 type Action =
   | { type: 'START_GAME'; payload: { name: string } }
@@ -30,29 +34,46 @@ const gameReducer = (state: GameState, action: Action): GameState => {
             isLoading: true, // Start loading for the first command
         }
     case 'START_LOADING':
-      return { ...state, isLoading: true };
+      return { ...state, isLoading: true, suggestedActions: [] };
     case 'CLEAR_QUEST_OFFER':
       return { ...state, questOffer: null };
     case 'PROCESS_RESPONSE': {
       const { response, command, set_toast } = action.payload;
       let newState = { ...state };
+      const wasInCombat = state.world.activeEnemies.length > 0;
 
       newState.history = [...state.history, { role: 'player', content: command }, { role: 'GM', content: response.narration }];
       
-      const newLogEntries: (string | { type: 'narration', content: string })[] = [];
+      const newLogEntries: (string | { type: 'narration', content: string } | { type: 'player', content: string } | { type: 'combat', content: string })[] = [];
+      newLogEntries.push({ type: 'player', content: command });
       newLogEntries.push({ type: 'narration', content: response.narration });
+
       if (response.logEntries) {
         newLogEntries.push(...response.logEntries);
       }
-      newState.log = [...state.log, ...newLogEntries];
 
-      if(response.questOffer) {
-          newState.questOffer = response.questOffer;
+      if (response.questOffer && response.questOffer.id && response.questOffer.title && response.questOffer.title.trim() && response.questOffer.description && response.questOffer.description.trim()) {
+        newState.questOffer = response.questOffer;
+      } else {
+        // Clear any existing offer if the new one is invalid or not present.
+        newState.questOffer = null;
+        if (response.questOffer) {
+            // Log the invalid offer for debugging purposes.
+            console.warn("Received an invalid quest offer from AI and ignored it:", response.questOffer);
+        }
       }
+
+      newState.suggestedActions = response.suggestedActions || [];
 
       if (response.playerUpdates) {
         if (response.playerUpdates.set) {
           Object.keys(response.playerUpdates.set).forEach(key => {
+            // CRITICAL FIX: Prevent AI from overwriting complex objects like inventory directly.
+            // Force it to use the proper inventoryUpdates mechanism.
+            if (key === 'inventory') {
+                console.warn("AI attempted to overwrite inventory via playerUpdates.set. Ignoring.");
+                return; 
+            }
             if (key === 'coords' && response.playerUpdates!.set!.coords) {
                 newState.world.location.coords = response.playerUpdates!.set!.coords;
                 newState.world.location.type = getTileTypeForCoords(newState.world.location.coords.x, newState.world.location.coords.y);
@@ -72,27 +93,63 @@ const gameReducer = (state: GameState, action: Action): GameState => {
 
       if (response.inventoryUpdates) {
         let newInventory = [...newState.player.inventory];
+        
+        // Handle ADD operations
         if (response.inventoryUpdates.add) {
-            response.inventoryUpdates.add.forEach(itemToAdd => {
+            const itemsToAdd = Array.isArray(response.inventoryUpdates.add) ? response.inventoryUpdates.add : [response.inventoryUpdates.add];
+            itemsToAdd.forEach(itemToAdd => {
                 const existingItem = newInventory.find(i => i.id === itemToAdd.id && i.type !== ItemType.EQUIPMENT);
-                if (existingItem && existingItem.count) {
-                    existingItem.count += (itemToAdd.count || 1);
+                if (existingItem) {
+                    existingItem.count = (existingItem.count || 0) + (itemToAdd.count || 1);
                 } else {
-                    newInventory.push({ ...itemToAdd, count: itemToAdd.count || 1 });
+                    const newItem = { ...itemToAdd };
+                    if (newItem.type !== ItemType.EQUIPMENT && newItem.count === undefined) {
+                        newItem.count = 1;
+                    }
+                    // Safeguard: Clamp durability on newly added items.
+                    if (newItem.durability !== undefined && newItem.maxDurability !== undefined) {
+                        newItem.durability = Math.max(0, Math.min(newItem.durability, newItem.maxDurability));
+                    }
+                    newInventory.push(newItem);
                 }
             });
         }
+        
+        // Handle REMOVE operations (now safer for stacks)
         if (response.inventoryUpdates.remove) {
-          newInventory = newInventory.filter(item => !response.inventoryUpdates!.remove!.includes(item.id));
+            const idsToRemove = Array.isArray(response.inventoryUpdates.remove) ? response.inventoryUpdates.remove : [response.inventoryUpdates.remove];
+            idsToRemove.forEach(idToRemove => {
+                const itemIndex = newInventory.findIndex(item => item.id === idToRemove);
+                if (itemIndex > -1) {
+                    const item = newInventory[itemIndex];
+                    if (item.type !== ItemType.EQUIPMENT && item.count && item.count > 1) {
+                        item.count -= 1; // Decrement stack
+                    } else {
+                        newInventory.splice(itemIndex, 1); // Remove item entirely
+                    }
+                }
+            });
         }
+        
+        // Handle UPDATE operations
         if (response.inventoryUpdates.update) {
-            response.inventoryUpdates.update.forEach(update => {
+            const updatesToApply = Array.isArray(response.inventoryUpdates.update) ? response.inventoryUpdates.update : [response.inventoryUpdates.update];
+            updatesToApply.forEach(update => {
                 const item = newInventory.find(i => i.id === update.id);
                 if (item) {
                     Object.assign(item, update.changes);
+                    // Safeguard: Clamp durability to its max value.
+                    if (item.durability !== undefined && item.maxDurability !== undefined) {
+                        item.durability = Math.max(0, Math.min(item.durability, item.maxDurability));
+                    }
+                     // If an update reduces count to 0 or less, remove the item
+                    if (item.count !== undefined && item.count <= 0) {
+                        newInventory = newInventory.filter(i => i.id !== item.id);
+                    }
                 }
             });
         }
+        
         newState.player.inventory = newInventory;
       }
 
@@ -102,10 +159,12 @@ const gameReducer = (state: GameState, action: Action): GameState => {
               newEnemies = newEnemies.filter(e => !response.enemyUpdates!.remove!.includes(e.id));
           }
            if (response.enemyUpdates.add) {
-              newEnemies.push(...response.enemyUpdates.add);
+              const enemiesToAdd = Array.isArray(response.enemyUpdates.add) ? response.enemyUpdates.add : [response.enemyUpdates.add];
+              newEnemies.push(...enemiesToAdd);
            }
            if (response.enemyUpdates.update) {
-               response.enemyUpdates.update.forEach(update => {
+               const updatesToApply = Array.isArray(response.enemyUpdates.update) ? response.enemyUpdates.update : [response.enemyUpdates.update];
+               updatesToApply.forEach(update => {
                    const enemy = newEnemies.find(e => e.id === update.id);
                    if (enemy && update.changes.hp !== undefined) {
                        enemy.hp = update.changes.hp;
@@ -118,7 +177,8 @@ const gameReducer = (state: GameState, action: Action): GameState => {
        if(response.questUpdates) {
           let newQuests = [...newState.quests];
           if(response.questUpdates.add) {
-              response.questUpdates.add.forEach(q => {
+              const questsToAdd = Array.isArray(response.questUpdates.add) ? response.questUpdates.add : [response.questUpdates.add];
+              questsToAdd.forEach(q => {
                   if(!newQuests.find(existing => existing.id === q.id)) {
                     newQuests.push({...q, status: QuestStatus.ACTIVE});
                     set_toast({ message: `Quest Dimulai: ${q.title}`, type: 'info' });
@@ -126,7 +186,8 @@ const gameReducer = (state: GameState, action: Action): GameState => {
               });
           }
           if(response.questUpdates.update) {
-              response.questUpdates.update.forEach(update => {
+              const updatesToApply = Array.isArray(response.questUpdates.update) ? response.questUpdates.update : [response.questUpdates.update];
+              updatesToApply.forEach(update => {
                   const quest = newQuests.find(q => q.id === update.id);
                   if(quest && update.changes.status) {
                       quest.status = update.changes.status;
@@ -141,6 +202,15 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           newState.quests = newQuests;
       }
 
+      const isNowInCombat = newState.world.activeEnemies.length > 0;
+
+      if (!wasInCombat && isNowInCombat) {
+        newLogEntries.push({ type: 'combat', content: 'PERTEMPURAN DIMULAI!' });
+      } else if (wasInCombat && !isNowInCombat) {
+        newLogEntries.push({ type: 'combat', content: 'Pertempuran Berakhir!' });
+      }
+      
+      newState.log = [...state.log, ...newLogEntries];
       newState.isLoading = false;
       return newState;
     }
@@ -174,14 +244,14 @@ interface ToastInfo {
   type: 'success' | 'info' | 'error';
 }
 
-const QuestOffer: React.FC<{ quest: Omit<Quest, 'status'>, onAccept: () => void, onReject: () => void }> = ({ quest, onAccept, onReject }) => {
+const QuestOffer: React.FC<{ quest: Omit<Quest, 'status'>, onAccept: () => void, onReject: () => void, playerName: string }> = ({ quest, onAccept, onReject, playerName }) => {
     return (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-gray-800 border-2 border-yellow-500 rounded-lg shadow-2xl p-4 z-10 animate-fade-in-down">
+        <div className="absolute bottom-24 right-4 w-full max-w-md bg-gray-800 border-2 border-yellow-500 rounded-lg shadow-2xl p-4 z-10 animate-fade-in-up">
             <h3 className="text-lg font-bold text-yellow-400 text-center">Tawaran Quest</h3>
             <div className="bg-gray-700/50 p-3 rounded-lg my-3">
                 <h4 className="font-semibold text-yellow-500">{quest.title}</h4>
                 <p className="text-sm text-gray-300 mt-1 whitespace-pre-wrap">
-                    <HighlightedText text={quest.description} />
+                    <HighlightedText text={quest.description} playerName={playerName} />
                 </p>
             </div>
             <div className="flex justify-center gap-4 mt-4">
@@ -196,6 +266,70 @@ const QuestOffer: React.FC<{ quest: Omit<Quest, 'status'>, onAccept: () => void,
     )
 }
 
+type GamePhase = 'SERVICE_SELECTION' | 'CREATION' | 'PLAYING';
+type AIServiceType = 'gemini' | 'ollama' | 'mistral' | 'groq';
+
+// Helper function to determine the initial state of the app
+const getInitialState = () => {
+  const storedService = localStorage.getItem('aiService') as AIServiceType | null;
+
+  if (!storedService) {
+    return {
+      phase: 'SERVICE_SELECTION' as GamePhase,
+      service: null,
+    };
+  }
+
+  // If a service is stored, validate its dependencies (API keys)
+  if (storedService === 'mistral' && !localStorage.getItem('mistralApiKey')) {
+      localStorage.removeItem('aiService'); // Clean up invalid state
+      return { phase: 'SERVICE_SELECTION' as GamePhase, service: null };
+  }
+
+  if (storedService === 'groq' && !localStorage.getItem('groqApiKey')) {
+      localStorage.removeItem('aiService'); // Clean up invalid state
+      return { phase: 'SERVICE_SELECTION' as GamePhase, service: null };
+  }
+
+  // If service is valid (gemini, ollama, or has its key), start at creation
+  return {
+    phase: 'CREATION' as GamePhase,
+    service: storedService,
+  };
+};
+
+type MobileView = 'narrative' | 'stats' | 'inventory' | 'map' | 'quests';
+
+const MobileBottomNav: React.FC<{
+  activeView: MobileView;
+  setView: (view: MobileView) => void;
+}> = ({ activeView, setView }) => {
+  const tabs: { id: MobileView; label: string; icon: string }[] = [
+    { id: 'narrative', label: 'Story', icon: '📖' },
+    { id: 'map', label: 'Map', icon: '🗺️' },
+    { id: 'stats', label: 'Stats', icon: '📊' },
+    { id: 'inventory', label: 'Inv.', icon: '🎒' },
+    { id: 'quests', label: 'Quests', icon: '📜' },
+  ];
+
+  return (
+    <nav className="flex justify-around bg-gray-800 border-t-2 border-gray-700">
+      {tabs.map(tab => (
+        <button
+          key={tab.id}
+          onClick={() => setView(tab.id)}
+          className={`flex-1 p-2 text-sm font-semibold flex flex-col items-center justify-center gap-1 transition-colors duration-200
+            ${activeView === tab.id ? 'text-yellow-400' : 'text-gray-400 hover:bg-gray-700/50'}`}
+        >
+          <span className="text-xl">{tab.icon}</span>
+          <span>{tab.label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+};
+
+
 const App: React.FC = () => {
   const [gameState, dispatch] = useReducer(gameReducer, {
       ...INITIAL_GAME_STATE,
@@ -203,7 +337,8 @@ const App: React.FC = () => {
       world: INITIAL_WORLD_STATE,
       quests: INITIAL_QUESTS,
       history: [],
-      log: []
+      log: [],
+      suggestedActions: []
   });
 
   const [toast, setToast] = useState<ToastInfo | null>(null);
@@ -212,19 +347,37 @@ const App: React.FC = () => {
     gameStateRef.current = gameState;
   }, [gameState]);
 
-  type GamePhase = 'SERVICE_SELECTION' | 'CREATION' | 'PLAYING';
-  const [aiService, setAiService] = useState<'gemini' | 'ollama' | null>(() => localStorage.getItem('aiService') as 'gemini' | 'ollama' | null);
-  
-  const [gamePhase, setGamePhase] = useState<GamePhase>(aiService ? 'CREATION' : 'SERVICE_SELECTION');
+  const [initialAppState] = useState(getInitialState);
+  const [aiService, setAiService] = useState<AIServiceType | null>(initialAppState.service);
+  const [gamePhase, setGamePhase] = useState<GamePhase>(initialAppState.phase);
+  const [mobileView, setMobileView] = useState<MobileView>('narrative');
+  const [logAnimStartIndex, setLogAnimStartIndex] = useState(0);
 
-  const handleServiceSelect = (service: 'gemini' | 'ollama') => {
+  const handleServiceSelect = (service: AIServiceType) => {
       localStorage.setItem('aiService', service);
       setAiService(service);
       setGamePhase('CREATION');
   };
 
+  const handleBackToServiceSelection = () => {
+    // Clear all stored service info to ensure a clean start
+    localStorage.removeItem('aiService');
+    localStorage.removeItem('mistralApiKey');
+    localStorage.removeItem('groqApiKey');
+    localStorage.removeItem('mistralModel');
+    localStorage.removeItem('groqModel');
+    setAiService(null);
+    setGamePhase('SERVICE_SELECTION');
+  };
+
   const processCommand = useCallback(async (command: string) => {
-    if (!aiService) return; // Should not happen, but for type safety
+    if (!aiService) {
+        // This case should be rare due to the new startup logic, but it's a good safeguard.
+        setToast({ message: "Layanan AI tidak dikonfigurasi. Mengarahkan kembali...", type: 'error' });
+        handleBackToServiceSelection();
+        return;
+    }
+    setLogAnimStartIndex(gameStateRef.current.log.length);
     dispatch({ type: 'START_LOADING' });
     const response = await getGameUpdate(gameStateRef.current, command, aiService);
     dispatch({ type: 'PROCESS_RESPONSE', payload: { response, command, set_toast: setToast } });
@@ -266,20 +419,49 @@ const App: React.FC = () => {
   }
 
   if (gamePhase === 'CREATION') {
-      return <CharacterCreation onStart={handleGameStart} />;
+      return <CharacterCreation onStart={handleGameStart} onBack={handleBackToServiceSelection} />;
   }
 
   return (
     <>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      <div className="flex flex-col md:flex-row h-screen font-sans">
-        <Sidebar player={gameState.player} world={gameState.world} quests={gameState.quests} />
+      <div className="flex flex-row h-screen font-sans">
+        <div className="hidden md:flex flex-shrink-0">
+            <Sidebar player={gameState.player} world={gameState.world} quests={gameState.quests} onSwitchService={handleBackToServiceSelection} />
+        </div>
         <main className="flex-grow flex flex-col bg-gray-900 h-full overflow-hidden relative">
-          <div className="flex-grow overflow-y-auto">
-            <NarrativeLog log={gameState.log} enemies={gameState.world.activeEnemies} />
-          </div>
-          {gameState.questOffer && <QuestOffer quest={gameState.questOffer} onAccept={handleQuestAccept} onReject={handleQuestReject} />}
-          <CommandInput onSubmit={processCommand} isLoading={gameState.isLoading} />
+            <div className="flex-grow overflow-y-auto">
+                {/* Mobile View Pane */}
+                <div className="md:hidden h-full">
+                    {mobileView === 'narrative' && <NarrativeLog log={gameState.log} enemies={gameState.world.activeEnemies} playerName={gameState.player.name} logAnimStartIndex={logAnimStartIndex} />}
+                    {mobileView === 'stats' && <PlayerStats player={gameState.player} />}
+                    {mobileView === 'inventory' && <Inventory player={gameState.player} />}
+                    {mobileView === 'map' && <MapView world={gameState.world} />}
+                    {mobileView === 'quests' && <QuestLog quests={gameState.quests} playerName={gameState.player.name} />}
+                </div>
+                
+                {/* Desktop View Pane */}
+                <div className="hidden md:block h-full">
+                    <NarrativeLog log={gameState.log} enemies={gameState.world.activeEnemies} playerName={gameState.player.name} logAnimStartIndex={logAnimStartIndex} />
+                </div>
+            </div>
+
+            {gameState.questOffer && <QuestOffer quest={gameState.questOffer} onAccept={handleQuestAccept} onReject={handleQuestReject} playerName={gameState.player.name} />}
+            
+            <div className={mobileView === 'narrative' ? 'block' : 'hidden md:block'}>
+                 <div className="border-t-2 border-gray-700">
+                    <SuggestedActions 
+                        actions={gameState.suggestedActions} 
+                        onSubmit={processCommand} 
+                        isLoading={gameState.isLoading} 
+                    />
+                    <CommandInput onSubmit={processCommand} isLoading={gameState.isLoading} />
+                </div>
+            </div>
+            
+            <div className="md:hidden">
+                <MobileBottomNav activeView={mobileView} setView={setMobileView} />
+            </div>
         </main>
       </div>
     </>

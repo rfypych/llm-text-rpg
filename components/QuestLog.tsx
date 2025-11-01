@@ -1,11 +1,13 @@
 import React from 'react';
 import { Quest, QuestStatus } from '../types';
+import { HighlightedText } from './NarrativeLog';
 
 interface QuestLogProps {
   quests: Quest[];
+  playerName: string;
 }
 
-export const QuestLog: React.FC<QuestLogProps> = ({ quests }) => {
+export const QuestLog: React.FC<QuestLogProps> = ({ quests, playerName }) => {
   const activeQuests = quests.filter(q => q.status === QuestStatus.ACTIVE);
   const completedQuests = quests.filter(q => q.status === QuestStatus.COMPLETED);
   const failedQuests = quests.filter(q => q.status === QuestStatus.FAILED);
@@ -18,7 +20,9 @@ export const QuestLog: React.FC<QuestLogProps> = ({ quests }) => {
           {activeQuests.map(quest => (
             <li key={quest.id} className="bg-gray-700/50 p-3 rounded-lg">
               <h4 className="font-semibold text-yellow-500">{quest.title}</h4>
-              <p className="text-sm text-gray-300 mt-1">{quest.description}</p>
+              <p className="text-sm text-gray-300 mt-1 whitespace-pre-wrap">
+                <HighlightedText text={quest.description} playerName={playerName} />
+              </p>
             </li>
           ))}
         </ul>
