@@ -10,11 +10,13 @@ interface SidebarProps {
   world: WorldState;
   quests: Quest[];
   onSwitchService: () => void;
+  onCommand: (command: string) => void;
+  isLoading: boolean;
 }
 
 type Tab = 'stats' | 'inventory' | 'map' | 'quests';
 
-export const Sidebar: React.FC<SidebarProps> = ({ player, world, quests, onSwitchService }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ player, world, quests, onSwitchService, onCommand, isLoading }) => {
   const [activeTab, setActiveTab] = useState<Tab>('map');
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
@@ -29,7 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ player, world, quests, onSwitc
       case 'stats':
         return <PlayerStats player={player} />;
       case 'inventory':
-        return <Inventory player={player} />;
+        return <Inventory player={player} onCommand={onCommand} isLoading={isLoading} />;
       case 'map':
         return <MapView world={world} />;
       case 'quests':
@@ -51,12 +53,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ player, world, quests, onSwitc
           >
             <span className="text-xl">{tab.icon}</span>
             <span>{tab.label}</span>
-            {activeTab === tab.id && <div className="absolute bottom-0 left-0 right-0 h-1 bg-amber-400"></div>}
+            <div className={`absolute bottom-0 left-0 right-0 h-1 bg-amber-400 transition-transform duration-300 ease-out ${activeTab === tab.id ? 'scale-x-100' : 'scale-x-0'}`}></div>
           </button>
         ))}
       </div>
       <div className="flex-grow overflow-y-auto">
-        {renderContent()}
+        <div key={activeTab} className="animate-content-fade-in">
+          {renderContent()}
+        </div>
       </div>
        <div className="p-4 border-t-2 border-slate-700">
         <button

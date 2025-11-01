@@ -19,7 +19,7 @@ export const CharacterCreation: React.FC<CharacterCreationProps> = ({ onStart, o
     <div className="flex items-center justify-center h-screen bg-slate-900 text-slate-100 font-sans">
       <div className="w-full max-w-md p-8 space-y-8 bg-slate-800 rounded-lg shadow-lg border-2 border-slate-700">
         <div className="text-center">
-          <h1 className="text-3xl font-bold font-serif text-amber-400 tracking-widest">Gemini Game Master</h1>
+          <h1 className="text-3xl font-bold font-serif text-amber-400 tracking-widest">Neural Odyssey</h1>
           <p className="mt-2 text-slate-400">An AI-Powered Text RPG Adventure</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">

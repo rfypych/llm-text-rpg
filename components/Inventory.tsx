@@ -3,31 +3,65 @@ import { PlayerState, Item, ItemType } from '../types';
 
 interface InventoryProps {
   player: PlayerState;
+  onCommand: (command: string) => void;
+  isLoading: boolean;
 }
 
-const ItemRow: React.FC<{ item: Item; isHighlighted: boolean }> = ({ item, isHighlighted }) => (
-    <li className={`text-sm bg-slate-700/50 p-2 rounded-lg flex justify-between items-center transition-all duration-300 hover:bg-slate-700 hover:scale-[1.02] ${isHighlighted ? 'animate-pop-in' : ''}`}>
-        <div>
-            <span className="mr-2 text-lg">{item.icon}</span>
-            <span>{item.name} {item.count && item.type !== ItemType.EQUIPMENT ? `x${item.count}` : ''}</span>
-        </div>
-        {item.type === ItemType.EQUIPMENT && (
-            <div className="text-xs text-slate-400 flex items-center gap-2">
-                <span className="font-semibold">
-                    {item.stats?.atk ? `ATK+${item.stats.atk} ` : ''}
-                    {item.stats?.def ? `DEF+${item.stats.def}` : ''}
-                </span>
-                {item.durability !== undefined && item.maxDurability !== undefined && (
-                    <span className={`font-mono px-1.5 py-0.5 rounded ${item.durability < item.maxDurability * 0.2 ? 'bg-red-800 text-red-300' : 'bg-slate-600'}`}>
-                        DUR: {item.durability}/{item.maxDurability}
-                    </span>
-                )}
+const ItemRow: React.FC<{ item: Item; isHighlighted: boolean; onCommand: (command: string) => void; isLoading: boolean; }> = ({ item, isHighlighted, onCommand, isLoading }) => (
+    <li className={`bg-slate-700/50 p-2 rounded-lg flex justify-between items-center transition-all duration-300 hover:bg-slate-700 hover:scale-[1.02] ${isHighlighted ? 'animate-pop-in' : ''}`}>
+        <div className="flex-grow">
+            <div className="flex items-center text-sm">
+                <span className="mr-2 text-lg">{item.icon}</span>
+                <span>{item.name} {item.count && item.type !== ItemType.EQUIPMENT ? `x${item.count}` : ''}</span>
             </div>
-        )}
+            {item.type === ItemType.EQUIPMENT && (
+                <div className="text-xs text-slate-400 flex items-center gap-2 mt-1 ml-8">
+                    <span className="font-semibold">
+                        {item.stats?.atk ? `ATK+${item.stats.atk} ` : ''}
+                        {item.stats?.def ? `DEF+${item.stats.def}` : ''}
+                    </span>
+                    {item.durability !== undefined && item.maxDurability !== undefined && (
+                        <span className={`font-mono px-1.5 py-0.5 rounded ${item.durability < item.maxDurability * 0.2 ? 'bg-red-800 text-red-300' : 'bg-slate-600'}`}>
+                            DUR: {item.durability}/{item.maxDurability}
+                        </span>
+                    )}
+                </div>
+            )}
+        </div>
+        <div className="flex-shrink-0 ml-2">
+            {item.type === ItemType.CONSUMABLE && (
+                <button
+                    onClick={() => onCommand(`gunakan ${item.name}`)}
+                    disabled={isLoading}
+                    className="bg-sky-600 text-white text-xs font-bold py-1 px-2 rounded-md transition-colors duration-200 hover:bg-sky-500 disabled:bg-slate-600 disabled:cursor-not-allowed"
+                >
+                    Gunakan
+                </button>
+            )}
+            {item.type === ItemType.EQUIPMENT && (
+                item.equipped ? (
+                    <button
+                        onClick={() => onCommand(`lepaskan ${item.name}`)}
+                        disabled={isLoading}
+                        className="bg-yellow-600 text-slate-900 text-xs font-bold py-1 px-2 rounded-md transition-colors duration-200 hover:bg-yellow-500 disabled:bg-slate-600 disabled:cursor-not-allowed"
+                    >
+                        Lepas
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => onCommand(`kenakan ${item.name}`)}
+                        disabled={isLoading}
+                        className="bg-green-600 text-white text-xs font-bold py-1 px-2 rounded-md transition-colors duration-200 hover:bg-green-500 disabled:bg-slate-600 disabled:cursor-not-allowed"
+                    >
+                        Kenakan
+                    </button>
+                )
+            )}
+        </div>
     </li>
 );
 
-const ItemList: React.FC<{ title: string; items: Item[]; highlightedIds: Set<string> }> = ({ title, items, highlightedIds }) => {
+const ItemList: React.FC<{ title: string; items: Item[]; highlightedIds: Set<string>; onCommand: (command: string) => void; isLoading: boolean; }> = ({ title, items, highlightedIds, onCommand, isLoading }) => {
     if (items.length === 0) {
         return null;
     }
@@ -35,14 +69,14 @@ const ItemList: React.FC<{ title: string; items: Item[]; highlightedIds: Set<str
         <div>
             <h4 className="font-serif font-bold text-amber-400 mt-4 mb-2 border-b border-slate-600 pb-1 tracking-wide">{title}</h4>
             <ul className="space-y-2">
-                {items.map(item => <ItemRow key={item.id} item={item} isHighlighted={highlightedIds.has(item.id)} />)}
+                {items.map(item => <ItemRow key={item.id} item={item} isHighlighted={highlightedIds.has(item.id)} onCommand={onCommand} isLoading={isLoading} />)}
             </ul>
         </div>
     );
 };
 
 
-export const Inventory: React.FC<InventoryProps> = ({ player }) => {
+export const Inventory: React.FC<InventoryProps> = ({ player, onCommand, isLoading }) => {
   const [highlightedItems, setHighlightedItems] = useState<Set<string>>(new Set());
   const prevInventoryRef = useRef<Item[]>(player.inventory);
 
@@ -91,18 +125,18 @@ export const Inventory: React.FC<InventoryProps> = ({ player }) => {
         <h4 className="font-serif font-bold text-amber-400 mb-2 border-b border-slate-600 pb-1 tracking-wide">Equipment (Dikenakan)</h4>
         {equippedItems.length > 0 ? (
             <ul className="space-y-2">
-                {equippedItems.map(item => <ItemRow key={item.id} item={item} isHighlighted={highlightedItems.has(item.id)} />)}
+                {equippedItems.map(item => <ItemRow key={item.id} item={item} isHighlighted={highlightedItems.has(item.id)} onCommand={onCommand} isLoading={isLoading} />)}
             </ul>
         ) : (
             <p className="text-slate-400 italic text-sm py-1">Tidak ada item yang dikenakan.</p>
         )}
       </div>
 
-      <ItemList title="Equipment (Ransel)" items={backpackEquipment} highlightedIds={highlightedItems} />
-      <ItemList title="Consumables" items={consumables} highlightedIds={highlightedItems} />
-      <ItemList title="Materials" items={materials} highlightedIds={highlightedItems} />
-      <ItemList title="Valuables" items={valuables} highlightedIds={highlightedItems} />
-      <ItemList title="Key Items" items={keys} highlightedIds={highlightedItems} />
+      <ItemList title="Equipment (Ransel)" items={backpackEquipment} highlightedIds={highlightedItems} onCommand={onCommand} isLoading={isLoading} />
+      <ItemList title="Consumables" items={consumables} highlightedIds={highlightedItems} onCommand={onCommand} isLoading={isLoading} />
+      <ItemList title="Materials" items={materials} highlightedIds={highlightedItems} onCommand={onCommand} isLoading={isLoading} />
+      <ItemList title="Valuables" items={valuables} highlightedIds={highlightedItems} onCommand={onCommand} isLoading={isLoading} />
+      <ItemList title="Key Items" items={keys} highlightedIds={highlightedItems} onCommand={onCommand} isLoading={isLoading} />
 
       {player.inventory.length === 0 && <p className="text-slate-400 italic mt-4">Inventaris Anda kosong.</p>}
       

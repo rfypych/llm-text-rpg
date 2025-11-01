@@ -1,4 +1,4 @@
-# Gemini Game Master RPG
+# Neural Odyssey
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) ![Language](https://img.shields.io/badge/language-TypeScript-blue.svg) ![Framework](https://img.shields.io/badge/framework-React-61DAFB.svg) ![Styling](https://img.shields.io/badge/styling-Tailwind_CSS-38B2AC.svg) ![AI Backend](https://img.shields.io/badge/AI-Gemini_|_Ollama-purple.svg)
 
@@ -58,8 +58,8 @@ Untuk menjalankan proyek ini secara lokal, ikuti langkah-langkah berikut.
 
 1.  **Clone repositori ini:**
     ```bash
-    git clone https://github.com/your-username/gemini-gamemaster-rpg.git
-    cd gemini-gamemaster-rpg
+    git clone https://github.com/your-username/neural-odyssey.git
+    cd neural-odyssey
     ```
 
 2.  **Instal dependensi:**
@@ -71,7 +71,8 @@ Untuk menjalankan proyek ini secara lokal, ikuti langkah-langkah berikut.
     Buat file `.env` di direktori root proyek. Tambahkan kunci API Gemini Anda jika Anda berencana menggunakannya.
     ```
     # .env
-    VITE_API_KEY="Y0UR_G3M1N1_AP1_K3Y"
+    # Kunci ini digunakan untuk layanan Google Gemini
+    VITE_API_KEY="YOUR_GEMINI_API_KEY"
     ```
     *Catatan: Kunci untuk Groq dan Mistral akan diminta di dalam aplikasi dan disimpan di penyimpanan lokal browser Anda.*
 

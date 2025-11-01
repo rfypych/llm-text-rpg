@@ -14,6 +14,7 @@ import { Inventory } from './components/Inventory';
 import { MapView } from './components/MapView';
 import { QuestLog } from './components/QuestLog';
 import { SuggestedActions } from './components/SuggestedActions';
+import { LandingPage } from './components/LandingPage';
 
 type Action =
   | { type: 'START_GAME'; payload: { name: string } }
@@ -266,37 +267,8 @@ const QuestOffer: React.FC<{ quest: Omit<Quest, 'status'>, onAccept: () => void,
     )
 }
 
-type GamePhase = 'SERVICE_SELECTION' | 'CREATION' | 'PLAYING';
+type GamePhase = 'LANDING' | 'SERVICE_SELECTION' | 'CREATION' | 'PLAYING';
 type AIServiceType = 'gemini' | 'ollama' | 'mistral' | 'groq';
-
-// Helper function to determine the initial state of the app
-const getInitialState = () => {
-  const storedService = localStorage.getItem('aiService') as AIServiceType | null;
-
-  if (!storedService) {
-    return {
-      phase: 'SERVICE_SELECTION' as GamePhase,
-      service: null,
-    };
-  }
-
-  // If a service is stored, validate its dependencies (API keys)
-  if (storedService === 'mistral' && !localStorage.getItem('mistralApiKey')) {
-      localStorage.removeItem('aiService'); // Clean up invalid state
-      return { phase: 'SERVICE_SELECTION' as GamePhase, service: null };
-  }
-
-  if (storedService === 'groq' && !localStorage.getItem('groqApiKey')) {
-      localStorage.removeItem('aiService'); // Clean up invalid state
-      return { phase: 'SERVICE_SELECTION' as GamePhase, service: null };
-  }
-
-  // If service is valid (gemini, ollama, or has its key), start at creation
-  return {
-    phase: 'CREATION' as GamePhase,
-    service: storedService,
-  };
-};
 
 type MobileView = 'narrative' | 'stats' | 'inventory' | 'map' | 'quests';
 
@@ -347,9 +319,8 @@ const App: React.FC = () => {
     gameStateRef.current = gameState;
   }, [gameState]);
 
-  const [initialAppState] = useState(getInitialState);
-  const [aiService, setAiService] = useState<AIServiceType | null>(initialAppState.service);
-  const [gamePhase, setGamePhase] = useState<GamePhase>(initialAppState.phase);
+  const [aiService, setAiService] = useState<AIServiceType | null>(null);
+  const [gamePhase, setGamePhase] = useState<GamePhase>('LANDING');
   const [mobileView, setMobileView] = useState<MobileView>('narrative');
   const [logAnimStartIndex, setLogAnimStartIndex] = useState(0);
 
@@ -371,17 +342,17 @@ const App: React.FC = () => {
   };
 
   const processCommand = useCallback(async (command: string) => {
-    if (!aiService) {
-        // This case should be rare due to the new startup logic, but it's a good safeguard.
+    const service = localStorage.getItem('aiService') as AIServiceType | null;
+    if (!service) {
         setToast({ message: "Layanan AI tidak dikonfigurasi. Mengarahkan kembali...", type: 'error' });
         handleBackToServiceSelection();
         return;
     }
     setLogAnimStartIndex(gameStateRef.current.log.length);
     dispatch({ type: 'START_LOADING' });
-    const response = await getGameUpdate(gameStateRef.current, command, aiService);
+    const response = await getGameUpdate(gameStateRef.current, command, service);
     dispatch({ type: 'PROCESS_RESPONSE', payload: { response, command, set_toast: setToast } });
-  }, [aiService]);
+  }, []);
 
 
   const handleGameStart = useCallback((name: string) => {
@@ -414,6 +385,10 @@ const App: React.FC = () => {
       dispatch({ type: 'CLEAR_QUEST_OFFER' });
   }
 
+  if (gamePhase === 'LANDING') {
+    return <LandingPage onStartGame={() => setGamePhase('SERVICE_SELECTION')} />;
+  }
+
   if (gamePhase === 'SERVICE_SELECTION') {
     return <ServiceSelection onSelectService={handleServiceSelect} />;
   }
@@ -427,7 +402,14 @@ const App: React.FC = () => {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <div className="flex flex-row h-screen font-sans">
         <div className="hidden md:flex flex-shrink-0">
-            <Sidebar player={gameState.player} world={gameState.world} quests={gameState.quests} onSwitchService={handleBackToServiceSelection} />
+            <Sidebar 
+              player={gameState.player} 
+              world={gameState.world} 
+              quests={gameState.quests} 
+              onSwitchService={handleBackToServiceSelection}
+              onCommand={processCommand}
+              isLoading={gameState.isLoading}
+            />
         </div>
         <main className="flex-grow flex flex-col bg-slate-900 h-full overflow-hidden relative">
             <div className="flex-grow overflow-y-auto">
@@ -435,7 +417,7 @@ const App: React.FC = () => {
                 <div className="md:hidden h-full">
                     {mobileView === 'narrative' && <NarrativeLog log={gameState.log} enemies={gameState.world.activeEnemies} playerName={gameState.player.name} logAnimStartIndex={logAnimStartIndex} />}
                     {mobileView === 'stats' && <PlayerStats player={gameState.player} />}
-                    {mobileView === 'inventory' && <Inventory player={gameState.player} />}
+                    {mobileView === 'inventory' && <Inventory player={gameState.player} onCommand={processCommand} isLoading={gameState.isLoading} />}
                     {mobileView === 'map' && <MapView world={gameState.world} />}
                     {mobileView === 'quests' && <QuestLog quests={gameState.quests} playerName={gameState.player.name} />}
                 </div>
