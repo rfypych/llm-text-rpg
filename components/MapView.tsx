@@ -31,11 +31,11 @@ export const MapView: React.FC<MapViewProps> = ({ world }) => {
     <div className="p-4 flex flex-col justify-between h-full">
         <div>
             <div className="text-center mb-4">
-                <h3 className="font-bold text-lg text-yellow-400">{world.location.name}</h3>
-                <p className="text-sm text-gray-400">{TILE_TYPES[world.location.type]?.name || "Unknown Area"}</p>
-                <p className="text-xs text-gray-500 font-mono mt-1">({coords.x}, {coords.y})</p>
+                <h3 className="font-bold font-serif text-lg text-amber-400 tracking-wider">{world.location.name}</h3>
+                <p className="text-sm text-slate-400">{TILE_TYPES[world.location.type]?.name || "Unknown Area"}</p>
+                <p className="text-xs text-slate-500 font-mono mt-1">({coords.x}, {coords.y})</p>
             </div>
-          <div className="grid grid-cols-7 gap-1 bg-gray-900 p-2 rounded-lg">
+          <div className="grid grid-cols-7 gap-1 bg-slate-900 p-2 rounded-xl">
             {mapChunks.map((row, y) =>
               row.map((tile) => {
                 const tileInfo = TILE_TYPES[tile.tileType] || { name: "Unknown", icon: "❓" };
@@ -43,16 +43,16 @@ export const MapView: React.FC<MapViewProps> = ({ world }) => {
                   <div
                     key={tile.key}
                     title={tile.isPlayer ? `You are here: ${world.location.name}` : tileInfo.name}
-                    className={`w-full aspect-square flex items-center justify-center rounded transition-all
-                      ${tile.isPlayer ? 'bg-yellow-500' : 'bg-gray-700'}
-                      border-2 ${tile.isPlayer ? 'border-yellow-300 scale-110 shadow-lg shadow-yellow-500/30' : 'border-gray-600'}`}
+                    className={`w-full aspect-square flex items-center justify-center rounded-lg transition-all
+                      ${tile.isPlayer ? 'bg-amber-500' : 'bg-slate-700'}
+                      border-2 ${tile.isPlayer ? 'border-amber-300 scale-110 shadow-lg shadow-amber-500/30' : 'border-slate-600'}`}
                   >
                     {tile.isPlayer ? (
-                      <span className="text-3xl">
+                      <span className="text-3xl animate-bounce">
                         🦸
                       </span>
                     ) : (
-                      <span className="text-xl">
+                      <span className="text-xl opacity-80">
                         {tileInfo.icon}
                       </span>
                     )}
@@ -63,16 +63,13 @@ export const MapView: React.FC<MapViewProps> = ({ world }) => {
           </div>
         </div>
         <div className="flex justify-center items-center mt-6">
-            <div className="relative w-24 h-24 text-gray-400 font-bold text-sm">
+            <div className="relative w-24 h-24 text-slate-400 font-bold text-sm">
                 <span className="absolute top-0 left-1/2 -translate-x-1/2">U</span>
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2">S</span>
                 <span className="absolute left-0 top-1/2 -translate-y-1/2">B</span>
                 <span className="absolute right-0 top-1/2 -translate-y-1/2">T</span>
-                <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-px h-1/2 bg-gray-600 absolute top-0 left-1/2 -translate-x-1/2"></div>
-                    <div className="w-px h-1/2 bg-gray-600 absolute bottom-0 left-1/2 -translate-x-1/2"></div>
-                    <div className="h-px w-1/2 bg-gray-600 absolute left-0 top-1/2 -translate-y-1/2"></div>
-                    <div className="h-px w-1/2 bg-gray-600 absolute right-0 top-1/2 -translate-y-1/2"></div>
+                <div className="w-full h-full flex items-center justify-center border-2 border-slate-600 rounded-full">
+                     <div className="w-10 h-10 border-2 border-slate-700 rounded-full"></div>
                 </div>
             </div>
         </div>

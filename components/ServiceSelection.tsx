@@ -64,24 +64,24 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
       onBack: () => void;
       onConfirm: () => void;
   }> = ({ title, color, models, selectedModel, onModelSelect, onBack, onConfirm }) => (
-      <div className="flex items-center justify-center h-screen bg-gray-900 text-gray-100">
-        <div className={`w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-lg border-2 border-gray-700`}>
+      <div className="flex items-center justify-center h-screen bg-slate-900 text-slate-100 font-sans">
+        <div className={`w-full max-w-md p-8 space-y-6 bg-slate-800 rounded-lg shadow-lg border-2 border-slate-700`}>
           <div className="text-center">
-            <h1 className={`text-3xl font-bold text-${color}-400`}>{title}</h1>
-            <p className="mt-2 text-gray-400">Pilih model yang akan menjadi Game Master Anda.</p>
+            <h1 className={`text-3xl font-bold font-serif text-${color}-400 tracking-wider`}>{title}</h1>
+            <p className="mt-2 text-slate-400">Pilih model yang akan menjadi Game Master Anda.</p>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
             {models.map(model => (
               <button
                 key={model.id}
                 onClick={() => onModelSelect(model.id)}
-                className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${selectedModel === model.id ? `border-${color}-500 bg-${color}-900/50 scale-105` : 'border-gray-600 bg-gray-700/50 hover:bg-gray-700'}`}
+                className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${selectedModel === model.id ? `border-${color}-500 bg-${color}-900/50 scale-105` : `border-slate-600 bg-slate-700/50 hover:bg-slate-700`}`}
               >
                 <div className="flex justify-between items-center">
                     <span className="font-bold">{model.name}</span>
                     {model.recommended && <span className={`text-xs font-bold bg-${color}-500 text-white py-1 px-2 rounded-full`}>⭐ Direkomendasikan</span>}
                 </div>
-                <p className="text-sm text-gray-400 mt-1">{model.description}</p>
+                <p className="text-sm text-slate-400 mt-1">{model.description}</p>
               </button>
             ))}
           </div>
@@ -89,7 +89,7 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
             <button
               type="button"
               onClick={onBack}
-              className="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-gray-500 hover:scale-105"
+              className="w-full bg-slate-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-slate-500 hover:scale-105"
             >
               Kembali
             </button>
@@ -109,15 +109,15 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
   switch(currentView) {
       case 'groq_key':
         return (
-          <div className="flex items-center justify-center h-screen bg-gray-900 text-gray-100">
-            <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-lg border-2 border-gray-700">
+          <div className="flex items-center justify-center h-screen bg-slate-900 text-slate-100 font-sans">
+            <div className="w-full max-w-md p-8 space-y-6 bg-slate-800 rounded-lg shadow-lg border-2 border-slate-700">
               <div className="text-center">
-                <h1 className="text-3xl font-bold text-purple-400">Konfigurasi Groq</h1>
-                <p className="mt-2 text-gray-400">Masukkan kunci API Groq Anda untuk melanjutkan.</p>
+                <h1 className="text-3xl font-bold font-serif text-purple-400 tracking-wider">Konfigurasi Groq</h1>
+                <p className="mt-2 text-slate-400">Masukkan kunci API Groq Anda untuk melanjutkan.</p>
               </div>
               <form onSubmit={handleGroqKeySubmit} className="space-y-4">
                 <div>
-                    <label htmlFor="groq-key" className="text-sm font-bold text-gray-300 block mb-2">
+                    <label htmlFor="groq-key" className="text-sm font-bold text-slate-300 block mb-2">
                     Kunci API Groq
                     </label>
                     <input
@@ -126,7 +126,7 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
                     value={groqApiKey}
                     onChange={(e) => setGroqApiKey(e.target.value)}
                     placeholder="gsk_..."
-                    className="w-full bg-gray-700 text-gray-100 placeholder-gray-500 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full bg-slate-700 text-slate-100 placeholder-slate-500 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                     required
                     />
                 </div>
@@ -134,20 +134,20 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
                     <button
                         type="button"
                         onClick={() => setCurrentView('main')}
-                        className="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-gray-500 hover:scale-105"
+                        className="w-full bg-slate-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-slate-500 hover:scale-105"
                     >
                         Kembali
                     </button>
                     <button
                         type="submit"
-                        className="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-purple-500 hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                        className="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-purple-500 hover:scale-105 disabled:bg-slate-600 disabled:cursor-not-allowed"
                         disabled={!groqApiKey.trim()}
                     >
                         Lanjutkan
                     </button>
                 </div>
               </form>
-              <p className="text-xs text-center text-gray-500 pt-2">Kunci Anda disimpan dengan aman di penyimpanan lokal browser Anda dan tidak pernah dikirim ke tempat lain selain ke Groq.</p>
+              <p className="text-xs text-center text-slate-500 pt-2">Kunci Anda disimpan dengan aman di penyimpanan lokal browser Anda dan tidak pernah dikirim ke tempat lain selain ke Groq.</p>
             </div>
           </div>
         );
@@ -163,15 +163,15 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
         />;
       case 'mistral_key':
         return (
-          <div className="flex items-center justify-center h-screen bg-gray-900 text-gray-100">
-            <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-lg border-2 border-gray-700">
+          <div className="flex items-center justify-center h-screen bg-slate-900 text-slate-100 font-sans">
+            <div className="w-full max-w-md p-8 space-y-6 bg-slate-800 rounded-lg shadow-lg border-2 border-slate-700">
               <div className="text-center">
-                <h1 className="text-3xl font-bold text-orange-400">Konfigurasi Mistral AI</h1>
-                <p className="mt-2 text-gray-400">Masukkan kunci API Mistral Anda untuk melanjutkan.</p>
+                <h1 className="text-3xl font-bold font-serif text-orange-400 tracking-wider">Konfigurasi Mistral AI</h1>
+                <p className="mt-2 text-slate-400">Masukkan kunci API Mistral Anda untuk melanjutkan.</p>
               </div>
               <form onSubmit={handleMistralKeySubmit} className="space-y-4">
                 <div>
-                    <label htmlFor="mistral-key" className="text-sm font-bold text-gray-300 block mb-2">
+                    <label htmlFor="mistral-key" className="text-sm font-bold text-slate-300 block mb-2">
                     Kunci API Mistral
                     </label>
                     <input
@@ -180,7 +180,7 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
                     value={mistralApiKey}
                     onChange={(e) => setMistralApiKey(e.target.value)}
                     placeholder="Masukkan kunci API Anda di sini"
-                    className="w-full bg-gray-700 text-gray-100 placeholder-gray-500 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full bg-slate-700 text-slate-100 placeholder-slate-500 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                     required
                     />
                 </div>
@@ -188,20 +188,20 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
                     <button
                         type="button"
                         onClick={() => setCurrentView('main')}
-                        className="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-gray-500 hover:scale-105"
+                        className="w-full bg-slate-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-slate-500 hover:scale-105"
                     >
                         Kembali
                     </button>
                     <button
                         type="submit"
-                        className="w-full bg-orange-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-orange-500 hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                        className="w-full bg-orange-600 text-white font-bold py-3 px-4 rounded-md transition-transform duration-200 hover:bg-orange-500 hover:scale-105 disabled:bg-slate-600 disabled:cursor-not-allowed"
                         disabled={!mistralApiKey.trim()}
                     >
                         Lanjutkan
                     </button>
                 </div>
               </form>
-              <p className="text-xs text-center text-gray-500 pt-2">Kunci Anda disimpan dengan aman di penyimpanan lokal browser Anda dan tidak pernah dikirim ke tempat lain selain ke Mistral.</p>
+              <p className="text-xs text-center text-slate-500 pt-2">Kunci Anda disimpan dengan aman di penyimpanan lokal browser Anda dan tidak pernah dikirim ke tempat lain selain ke Mistral.</p>
             </div>
           </div>
         );
@@ -217,19 +217,19 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
         />;
     default:
         return (
-            <div className="flex items-center justify-center h-screen bg-gray-900 text-gray-100">
-            <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-lg border-2 border-gray-700">
+            <div className="flex items-center justify-center h-screen bg-slate-900 text-slate-100 font-sans">
+            <div className="w-full max-w-md p-8 space-y-8 bg-slate-800 rounded-lg shadow-lg border-2 border-slate-700">
                 <div className="text-center">
-                <h1 className="text-3xl font-bold text-yellow-400">Pilih Layanan AI</h1>
-                <p className="mt-2 text-gray-400">Pilih penyedia Model Bahasa (LLM) untuk menjadi Game Master Anda.</p>
+                <h1 className="text-3xl font-bold font-serif text-amber-400 tracking-widest">Pilih Layanan AI</h1>
+                <p className="mt-2 text-slate-400">Pilih penyedia Model Bahasa (LLM) untuk menjadi Game Master Anda.</p>
                 </div>
                 <div className="space-y-4">
                 <button
                     onClick={() => onSelectService('gemini')}
-                    className="w-full text-left bg-blue-600 text-white font-bold py-4 px-5 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:scale-105"
+                    className="w-full text-left bg-sky-600 text-white font-bold py-4 px-5 rounded-md transition-transform duration-200 hover:bg-sky-500 hover:scale-105"
                 >
                     <h2 className="text-lg">Gunakan Gemini (Cloud)</h2>
-                    <p className="text-sm font-normal text-blue-200">Koneksi internet diperlukan. Didukung oleh Google AI.</p>
+                    <p className="text-sm font-normal text-sky-200">Koneksi internet diperlukan. Didukung oleh Google AI.</p>
                 </button>
                 <button
                     onClick={() => setCurrentView('mistral_key')}
@@ -253,7 +253,7 @@ export const ServiceSelection: React.FC<ServiceSelectionProps> = ({ onSelectServ
                     <p className="text-sm font-normal text-green-200">Membutuhkan Ollama yang berjalan di komputer Anda. Mode pengembangan.</p>
                 </button>
                 </div>
-                <p className="text-xs text-center text-gray-500 pt-4">Pilihan Anda akan disimpan untuk sesi mendatang.</p>
+                <p className="text-xs text-center text-slate-500 pt-4">Pilihan Anda akan disimpan untuk sesi mendatang.</p>
             </div>
             </div>
         );

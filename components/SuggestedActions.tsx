@@ -12,14 +12,14 @@ export const SuggestedActions: React.FC<SuggestedActionsProps> = ({ actions, onS
   }
 
   return (
-    <div className="px-4 pt-3 pb-1 bg-gray-800/50">
+    <div className="px-4 pt-3 pb-1">
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        <span className="text-sm font-bold text-gray-400 flex-shrink-0 mr-2">Saran:</span>
+        <span className="text-sm font-bold text-slate-400 flex-shrink-0 mr-2">Saran:</span>
         {actions.map((action, index) => (
           <button
             key={index}
             onClick={() => onSubmit(action)}
-            className="flex-shrink-0 bg-gray-700 text-gray-200 text-sm font-semibold py-1.5 px-3 rounded-full transition-colors duration-200 hover:bg-yellow-600 hover:text-gray-900 whitespace-nowrap"
+            className="flex-shrink-0 bg-slate-700 text-slate-200 text-sm font-semibold py-1.5 px-3 rounded-full transition-colors duration-200 hover:bg-amber-600 hover:text-slate-900 whitespace-nowrap"
           >
             {action}
           </button>

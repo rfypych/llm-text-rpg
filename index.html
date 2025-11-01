@@ -5,7 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gemini Game Master RPG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Lato', 'sans-serif'],
+            serif: ['Cinzel', 'serif'],
+          },
+        },
+      },
+    }
+  </script>
   <script type="importmap">
 {
   "imports": {
@@ -18,15 +33,15 @@
 </script>
 <style>
   .highlight-location {
-    color: #4ade80; /* green-400 */
+    color: #2dd4bf; /* teal-400 */
     font-weight: bold;
   }
   .highlight-character {
-    color: #f87171; /* red-400 */
+    color: #f472b6; /* rose-400 */
     font-style: italic;
   }
   .highlight-item {
-    color: #60a5fa; /* blue-400 */
+    color: #38bdf8; /* sky-400 */
   }
   .highlight-item::before {
     content: '[';
@@ -35,9 +50,10 @@
     content: ']';
   }
   .highlight-action {
-    color: #facc15; /* yellow-400 */
+    color: #f59e0b; /* amber-500 */
     text-decoration: underline;
     text-decoration-style: wavy;
+    text-underline-offset: 2px;
   }
 
   /* Animation Keyframes */
@@ -68,8 +84,8 @@
   
   @keyframes statChangeFlash {
       from {
-          background-color: rgba(250, 204, 21, 0.3); /* yellow-400 with alpha */
-          box-shadow: 0 0 8px rgba(250, 204, 21, 0.3);
+          background-color: rgba(245, 158, 11, 0.3); /* amber-500 with alpha */
+          box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
       }
       to {
           background-color: transparent;
@@ -89,9 +105,15 @@
   .animate-stat-flash {
       animation: statChangeFlash 0.8s ease-out forwards;
   }
+
+  body {
+      background-color: #0f172a; /* slate-900 */
+      background-image: radial-gradient(circle at center, rgba(15, 23, 42, 0) 0%, #020617 100%);
+  }
+
 </style>
 </head>
-  <body class="bg-gray-900 text-gray-100">
+  <body class="bg-slate-900 text-slate-200">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

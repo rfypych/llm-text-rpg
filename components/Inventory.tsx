@@ -6,19 +6,19 @@ interface InventoryProps {
 }
 
 const ItemRow: React.FC<{ item: Item; isHighlighted: boolean }> = ({ item, isHighlighted }) => (
-    <li className={`text-sm bg-gray-700/50 p-2 rounded flex justify-between items-center transition-transform duration-300 ${isHighlighted ? 'animate-pop-in' : ''}`}>
+    <li className={`text-sm bg-slate-700/50 p-2 rounded-lg flex justify-between items-center transition-all duration-300 hover:bg-slate-700 hover:scale-[1.02] ${isHighlighted ? 'animate-pop-in' : ''}`}>
         <div>
-            <span className="mr-2">{item.icon}</span>
+            <span className="mr-2 text-lg">{item.icon}</span>
             <span>{item.name} {item.count && item.type !== ItemType.EQUIPMENT ? `x${item.count}` : ''}</span>
         </div>
         {item.type === ItemType.EQUIPMENT && (
-            <div className="text-xs text-gray-400 flex items-center gap-2">
-                <span>
+            <div className="text-xs text-slate-400 flex items-center gap-2">
+                <span className="font-semibold">
                     {item.stats?.atk ? `ATK+${item.stats.atk} ` : ''}
                     {item.stats?.def ? `DEF+${item.stats.def}` : ''}
                 </span>
                 {item.durability !== undefined && item.maxDurability !== undefined && (
-                    <span className={`font-mono px-1.5 py-0.5 rounded ${item.durability < item.maxDurability * 0.2 ? 'bg-red-800 text-red-300' : 'bg-gray-600'}`}>
+                    <span className={`font-mono px-1.5 py-0.5 rounded ${item.durability < item.maxDurability * 0.2 ? 'bg-red-800 text-red-300' : 'bg-slate-600'}`}>
                         DUR: {item.durability}/{item.maxDurability}
                     </span>
                 )}
@@ -33,7 +33,7 @@ const ItemList: React.FC<{ title: string; items: Item[]; highlightedIds: Set<str
     }
     return (
         <div>
-            <h4 className="font-semibold text-yellow-400 mt-4 mb-2 border-b border-gray-600 pb-1">{title}</h4>
+            <h4 className="font-serif font-bold text-amber-400 mt-4 mb-2 border-b border-slate-600 pb-1 tracking-wide">{title}</h4>
             <ul className="space-y-2">
                 {items.map(item => <ItemRow key={item.id} item={item} isHighlighted={highlightedIds.has(item.id)} />)}
             </ul>
@@ -88,13 +88,13 @@ export const Inventory: React.FC<InventoryProps> = ({ player }) => {
   return (
     <div className="p-4">
       <div>
-        <h4 className="font-semibold text-yellow-400 mb-2 border-b border-gray-600 pb-1">Equipment (Dikenakan)</h4>
+        <h4 className="font-serif font-bold text-amber-400 mb-2 border-b border-slate-600 pb-1 tracking-wide">Equipment (Dikenakan)</h4>
         {equippedItems.length > 0 ? (
             <ul className="space-y-2">
                 {equippedItems.map(item => <ItemRow key={item.id} item={item} isHighlighted={highlightedItems.has(item.id)} />)}
             </ul>
         ) : (
-            <p className="text-gray-400 italic text-sm py-1">Tidak ada item yang dikenakan.</p>
+            <p className="text-slate-400 italic text-sm py-1">Tidak ada item yang dikenakan.</p>
         )}
       </div>
 
@@ -104,10 +104,10 @@ export const Inventory: React.FC<InventoryProps> = ({ player }) => {
       <ItemList title="Valuables" items={valuables} highlightedIds={highlightedItems} />
       <ItemList title="Key Items" items={keys} highlightedIds={highlightedItems} />
 
-      {player.inventory.length === 0 && <p className="text-gray-400 italic mt-4">Inventaris Anda kosong.</p>}
+      {player.inventory.length === 0 && <p className="text-slate-400 italic mt-4">Inventaris Anda kosong.</p>}
       
       {backpackItems.length === 0 && player.inventory.length > 0 && (
-         <p className="text-gray-400 italic mt-4 text-sm">Ransel Anda kosong.</p>
+         <p className="text-slate-400 italic mt-4 text-sm">Ransel Anda kosong.</p>
       )}
     </div>
   );

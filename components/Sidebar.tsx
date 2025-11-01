@@ -40,27 +40,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ player, world, quests, onSwitc
   };
 
   return (
-    <aside className="w-80 lg:w-96 flex-shrink-0 bg-gray-800 h-full flex flex-col border-r-2 border-gray-700">
-      <div className="flex border-b-2 border-gray-700">
+    <aside className="w-80 lg:w-96 flex-shrink-0 bg-slate-800 h-full flex flex-col border-r-2 border-slate-700">
+      <div className="flex border-b-2 border-slate-700">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 p-3 text-sm font-semibold flex flex-col items-center justify-center gap-1 transition-colors duration-200
-              ${activeTab === tab.id ? 'bg-gray-700 text-yellow-400' : 'text-gray-400 hover:bg-gray-700/50'}`}
+            className={`flex-1 p-3 text-sm font-semibold flex flex-col items-center justify-center gap-1 transition-colors duration-200 relative
+              ${activeTab === tab.id ? 'text-amber-400' : 'text-slate-400 hover:bg-slate-700/50'}`}
           >
             <span className="text-xl">{tab.icon}</span>
             <span>{tab.label}</span>
+            {activeTab === tab.id && <div className="absolute bottom-0 left-0 right-0 h-1 bg-amber-400"></div>}
           </button>
         ))}
       </div>
       <div className="flex-grow overflow-y-auto">
         {renderContent()}
       </div>
-       <div className="p-4 border-t-2 border-gray-700">
+       <div className="p-4 border-t-2 border-slate-700">
         <button
           onClick={onSwitchService}
-          className="w-full flex items-center justify-center gap-2 bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-md transition-colors duration-200 hover:bg-gray-600 hover:text-yellow-400"
+          className="w-full flex items-center justify-center gap-2 bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-md transition-colors duration-200 hover:bg-slate-600 hover:text-amber-400"
         >
           <span>⚙️</span>
           <span>Ganti Layanan AI</span>

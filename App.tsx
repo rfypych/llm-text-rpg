@@ -246,11 +246,11 @@ interface ToastInfo {
 
 const QuestOffer: React.FC<{ quest: Omit<Quest, 'status'>, onAccept: () => void, onReject: () => void, playerName: string }> = ({ quest, onAccept, onReject, playerName }) => {
     return (
-        <div className="absolute bottom-24 right-4 w-full max-w-md bg-gray-800 border-2 border-yellow-500 rounded-lg shadow-2xl p-4 z-10 animate-fade-in-up">
-            <h3 className="text-lg font-bold text-yellow-400 text-center">Tawaran Quest</h3>
-            <div className="bg-gray-700/50 p-3 rounded-lg my-3">
-                <h4 className="font-semibold text-yellow-500">{quest.title}</h4>
-                <p className="text-sm text-gray-300 mt-1 whitespace-pre-wrap">
+        <div className="absolute bottom-24 right-4 w-full max-w-md bg-stone-800 border-2 border-amber-500 rounded-lg shadow-2xl p-4 z-10 animate-fade-in-up">
+            <h3 className="text-lg font-bold font-serif text-amber-400 text-center tracking-wider">Tawaran Quest</h3>
+            <div className="bg-slate-700/50 p-3 rounded-lg my-3">
+                <h4 className="font-semibold text-amber-500">{quest.title}</h4>
+                <p className="text-sm text-slate-300 mt-1 whitespace-pre-wrap">
                     <HighlightedText text={quest.description} playerName={playerName} />
                 </p>
             </div>
@@ -313,13 +313,13 @@ const MobileBottomNav: React.FC<{
   ];
 
   return (
-    <nav className="flex justify-around bg-gray-800 border-t-2 border-gray-700">
+    <nav className="flex justify-around bg-slate-800 border-t-2 border-slate-700">
       {tabs.map(tab => (
         <button
           key={tab.id}
           onClick={() => setView(tab.id)}
           className={`flex-1 p-2 text-sm font-semibold flex flex-col items-center justify-center gap-1 transition-colors duration-200
-            ${activeView === tab.id ? 'text-yellow-400' : 'text-gray-400 hover:bg-gray-700/50'}`}
+            ${activeView === tab.id ? 'text-amber-400' : 'text-slate-400 hover:bg-slate-700/50'}`}
         >
           <span className="text-xl">{tab.icon}</span>
           <span>{tab.label}</span>
@@ -429,7 +429,7 @@ const App: React.FC = () => {
         <div className="hidden md:flex flex-shrink-0">
             <Sidebar player={gameState.player} world={gameState.world} quests={gameState.quests} onSwitchService={handleBackToServiceSelection} />
         </div>
-        <main className="flex-grow flex flex-col bg-gray-900 h-full overflow-hidden relative">
+        <main className="flex-grow flex flex-col bg-slate-900 h-full overflow-hidden relative">
             <div className="flex-grow overflow-y-auto">
                 {/* Mobile View Pane */}
                 <div className="md:hidden h-full">
@@ -449,7 +449,7 @@ const App: React.FC = () => {
             {gameState.questOffer && <QuestOffer quest={gameState.questOffer} onAccept={handleQuestAccept} onReject={handleQuestReject} playerName={gameState.player.name} />}
             
             <div className={mobileView === 'narrative' ? 'block' : 'hidden md:block'}>
-                 <div className="border-t-2 border-gray-700">
+                 <div className="border-t-2 border-slate-700 bg-slate-900/80 backdrop-blur-sm">
                     <SuggestedActions 
                         actions={gameState.suggestedActions} 
                         onSubmit={processCommand} 

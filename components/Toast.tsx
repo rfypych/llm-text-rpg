@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 
 interface ToastProps {
@@ -15,8 +14,8 @@ const toastConfig = {
     },
     info: {
         icon: '📜',
-        bg: 'bg-blue-600',
-        border: 'border-blue-500'
+        bg: 'bg-sky-600',
+        border: 'border-sky-500'
     },
     error: {
         icon: '❌',
@@ -34,7 +33,7 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose, type }) => {
   const config = toastConfig[type];
 
   return (
-    <div className={`fixed top-5 right-5 ${config.bg} text-white py-3 px-5 rounded-lg shadow-lg flex items-center gap-3 border-b-4 ${config.border} animate-fade-in-down`}>
+    <div className={`fixed top-5 right-5 ${config.bg} text-white py-3 px-5 rounded-lg shadow-lg flex items-center gap-3 border-b-4 ${config.border} animate-fade-in-down font-sans z-50`}>
       <span className="text-xl">{config.icon}</span>
       <span>{message}</span>
     </div>
